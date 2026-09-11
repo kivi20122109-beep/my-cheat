@@ -1,4 +1,4 @@
--- War Tycoon Hub v16 | Bind: J | Delta + Xeno
+-- War Tycoon Hub v17 | Bind: J | Delta + Xeno
 local Players=game:GetService("Players")
 local UIS=game:GetService("UserInputService")
 local RunService=game:GetService("RunService")
@@ -33,7 +33,7 @@ fly="Полёт",fly_speed="Скорость полёта",noclip="Сквозь 
 walk="Своя скорость",walk_speed="Скорость ходьбы",jump="Свой прыжок",jump_power="Сила прыжка",
 select_player="Выберите игрока",no_players="Нет других игроков",
 tp_player="Телепорт к игроку",tp_airdrop="К аирдропу",tp_oil="К нефти",tp_capture="К точке захвата",
-tp_veh="К технике",save_pos="Сохранить позицию",load_pos="Вернуться",
+tp_veh="К технике",tp_barrel="К бочке с маслом",save_pos="Сохранить позицию",load_pos="Вернуться",
 red="Красный",blue="Синий",purple="Фиолет",green="Зелёный",cyan="Голубой",orange="Оранж",yellow="Жёлтый",pink="Розовый",
 scale="Масштаб",apply="Применить",save_cfg="Сохранить под именем",load_cfg="Загрузить по имени",
 list_cfgs="Список конфигов",reset_move="Сбросить движение",cfg_name="Имя конфига",
@@ -54,7 +54,7 @@ fly="Fly",fly_speed="Fly Speed",noclip="Noclip",
 walk="Custom WalkSpeed",walk_speed="WalkSpeed",jump="Custom JumpPower",jump_power="JumpPower",
 select_player="Select player",no_players="No other players",
 tp_player="Teleport to player",tp_airdrop="To Airdrop",tp_oil="To Oil Rig",tp_capture="To Capture",
-tp_veh="To Vehicle",save_pos="Save position",load_pos="Return",
+tp_veh="To Vehicle",tp_barrel="To Oil Barrel",save_pos="Save position",load_pos="Return",
 red="Red",blue="Blue",purple="Purple",green="Green",cyan="Cyan",orange="Orange",yellow="Yellow",pink="Pink",
 scale="Scale",apply="Apply",save_cfg="Save as",load_cfg="Load by name",
 list_cfgs="List configs",reset_move="Reset movement",cfg_name="Config name",
@@ -280,7 +280,6 @@ local function openBindPicker(bindKey,labelTxt,updateLabel)
     local bst=Instance.new("UIStroke",picker)
     bst.Color=Config.Accent
     bst.Thickness=1.5
-
     local lt=Instance.new("TextLabel",picker)
     lt.Size=UDim2.new(1,-20,0,30)
     lt.Position=UDim2.new(0,10,0,15)
@@ -290,7 +289,6 @@ local function openBindPicker(bindKey,labelTxt,updateLabel)
     lt.Font=Enum.Font.GothamBold
     lt.TextSize=13
     lt.ZIndex=101
-
     local sub=Instance.new("TextLabel",picker)
     sub.Size=UDim2.new(1,-20,0,20)
     sub.Position=UDim2.new(0,10,0,42)
@@ -300,7 +298,6 @@ local function openBindPicker(bindKey,labelTxt,updateLabel)
     sub.Font=Enum.Font.Gotham
     sub.TextSize=11
     sub.ZIndex=101
-
     local cancel=Instance.new("TextButton",picker)
     cancel.Size=UDim2.new(1,-20,0,28)
     cancel.Position=UDim2.new(0,10,1,-38)
@@ -314,7 +311,6 @@ local function openBindPicker(bindKey,labelTxt,updateLabel)
     cancel.Selectable=false
     cancel.ZIndex=101
     Instance.new("UICorner",cancel).CornerRadius=UDim.new(0,6)
-
     local closed=false
     local function close()
         if closed then return end
@@ -324,15 +320,11 @@ local function openBindPicker(bindKey,labelTxt,updateLabel)
     end
     cancel.MouseButton1Click:Connect(close)
     cancel.TouchTap:Connect(close)
-
-    -- ЛОВИМ ЛЮБУЮ КЛАВИАТУРУ (в т.ч. мобильную Delta)
     local conn
     conn=UIS.InputBegan:Connect(function(input,gpe)
         if closed then conn:Disconnect() return end
         if input.UserInputType==Enum.UserInputType.Keyboard then
-            if input.KeyCode==Enum.KeyCode.Escape then
-                close();conn:Disconnect();return
-            end
+            if input.KeyCode==Enum.KeyCode.Escape then close();conn:Disconnect();return end
             Binds[bindKey]=input.KeyCode.Name
             saveConfig()
             updateLabel(input.KeyCode.Name)
@@ -354,7 +346,6 @@ local function toggle(p,t,d,cb,bindKey,labelKey)
     c.Size=UDim2.new(1,0,0,40)
     c.BackgroundTransparency=1
     c.ZIndex=13
-
     local l=Instance.new("TextLabel",c)
     if bindKey then l.Size=UDim2.new(1,-180,1,0) else l.Size=UDim2.new(1,-70,1,0) end
     l.BackgroundTransparency=1
@@ -365,7 +356,6 @@ local function toggle(p,t,d,cb,bindKey,labelKey)
     l.TextXAlignment=Enum.TextXAlignment.Left
     l.ZIndex=14
     if labelKey then table.insert(labels,{obj=l,key=labelKey}) end
-
     if bindKey then
         local bTxt=Binds[bindKey] or T[Lang].bind_ph
         local bindBtn=Instance.new("TextButton",c)
@@ -381,14 +371,9 @@ local function toggle(p,t,d,cb,bindKey,labelKey)
         bindBtn.Selectable=false
         bindBtn.ZIndex=14
         Instance.new("UICorner",bindBtn).CornerRadius=UDim.new(0,6)
-        bindBtn.MouseButton1Click:Connect(function()
-            openBindPicker(bindKey,l.Text,function(k) bindBtn.Text=k end)
-        end)
-        bindBtn.TouchTap:Connect(function()
-            openBindPicker(bindKey,l.Text,function(k) bindBtn.Text=k end)
-        end)
+        bindBtn.MouseButton1Click:Connect(function() openBindPicker(bindKey,l.Text,function(k) bindBtn.Text=k end) end)
+        bindBtn.TouchTap:Connect(function() openBindPicker(bindKey,l.Text,function(k) bindBtn.Text=k end) end)
     end
-
     local st=d
     local b=Instance.new("TextButton",c)
     b.Size=UDim2.fromOffset(48,22)
@@ -403,7 +388,6 @@ local function toggle(p,t,d,cb,bindKey,labelKey)
     b.Selectable=false
     b.ZIndex=14
     Instance.new("UICorner",b).CornerRadius=UDim.new(0,6)
-
     local ref
     ref={state=st,btn=b,set=function(v)
         st=v
@@ -415,7 +399,6 @@ local function toggle(p,t,d,cb,bindKey,labelKey)
     end}
     table.insert(acc.toggles,ref)
     if bindKey then toggleRefs[bindKey]=ref end
-
     local function flip()
         st=not st
         ref.state=st
@@ -487,14 +470,12 @@ local function slider(p,t,mn,mx,d,cb,labelKey)
     end
     bg.InputBegan:Connect(function(i)
         if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then
-            drag=true
-            upd(i)
+            drag=true;upd(i)
         end
     end)
     bg.InputEnded:Connect(function(i)
         if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then
-            drag=false
-            saveConfig()
+            drag=false;saveConfig()
         end
     end)
     UIS.InputChanged:Connect(function(i)
@@ -575,7 +556,6 @@ local function createTab(name,order,labelKey)
     local pad=Instance.new("UIPadding",btn)
     pad.PaddingLeft=UDim.new(0,14)
     if labelKey then table.insert(labels,{obj=btn,key=labelKey,tab=true}) end
-
     local page=Instance.new("ScrollingFrame",Content)
     page.Size=UDim2.fromScale(1,1)
     page.BackgroundTransparency=1
@@ -593,10 +573,8 @@ local function createTab(name,order,labelKey)
     pad2.PaddingRight=UDim.new(0,14)
     pad2.PaddingTop=UDim.new(0,6)
     pad2.PaddingBottom=UDim.new(0,14)
-
     local ref={btn=btn,active=false,key=labelKey}
     table.insert(acc.tabs,ref)
-
     local function select()
         if currentPage then currentPage.Visible=false end
         for _,r in ipairs(acc.tabs) do
@@ -622,6 +600,101 @@ local VisualsTab=createTab(T[Lang].tab_visual,2,"tab_visual")
 local MoveTab=createTab(T[Lang].tab_move,3,"tab_move")
 local TPTab=createTab(T[Lang].tab_tp,4,"tab_tp")
 local SettingsTab=createTab(T[Lang].tab_settings,5,"tab_settings")
+
+-- ==== ФУНКЦИИ TP И ПОИСКА (ДО КНОПОК!) ====
+local Character,Humanoid,Root
+local wasWalkSpeed,wasJumpPower=false,false
+local function updateChar()
+    Character=LP.Character
+    if Character then
+        Humanoid=Character:FindFirstChildOfClass("Humanoid")
+        Root=Character:FindFirstChild("HumanoidRootPart")
+    end
+end
+updateChar()
+LP.CharacterAdded:Connect(function(c)
+    Character=c
+    Humanoid=c:WaitForChild("Humanoid",5)
+    Root=c:WaitForChild("HumanoidRootPart",5)
+end)
+
+local function tpTo(pos)
+    local r=LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+    if r and pos then r.CFrame=CFrame.new(pos+Vector3.new(0,3,0)) end
+end
+
+local function eachTop(fn)
+    for _,a in ipairs(Workspace:GetChildren()) do
+        fn(a)
+        if a:IsA("Model") or a:IsA("Folder") then
+            for _,b in ipairs(a:GetChildren()) do
+                fn(b)
+                if b:IsA("Model") or b:IsA("Folder") then
+                    for _,c in ipairs(b:GetChildren()) do fn(c) end
+                end
+            end
+        end
+    end
+end
+
+local function getPath(inst)
+    local parts={inst.Name}
+    local p=inst.Parent
+    local depth=0
+    while p and p~=Workspace and depth<5 do
+        table.insert(parts,1,p.Name)
+        p=p.Parent
+        depth=depth+1
+    end
+    return table.concat(parts,"."):lower()
+end
+local function getName(inst)
+    local ok,n=pcall(function() return inst.Name:lower() end)
+    return ok and n or ""
+end
+
+local function isAirdrop(m)
+    return m.Name=="Airdrop Workspace" and getPath(m):find("game systems")~=nil
+end
+local function isOil(m)
+    local n=getName(m)
+    if n=="oil rig1" or n=="oil rig2" then return getPath(m):find("warehouses")~=nil end
+    return n:find("spawner oil rig")~=nil
+end
+local function isCapture(m)
+    return m.Name=="CapturePoint" and getPath(m):find("game systems")~=nil
+end
+local function isVeh(m)
+    if not m:IsA("Model") then return false end
+    local p=getPath(m)
+    if not p:find("game systems") then return false end
+    local par=m.Parent
+    if not par then return false end
+    local pn=par.Name
+    if pn=="Helicopter Workspace" or pn=="Vehicle Workspace" or pn=="Plane Workspace" or pn=="Tank Workspace" or pn=="Submarine Workspace" then return true end
+    return false
+end
+local function isBarrel(m)
+    local n=getName(m)
+    if n:find("oilbarrel") or n:find("oil_barrel") then return true end
+    if n:find("barrel") and getPath(m):find("game systems") then return true end
+    return false
+end
+
+local function findClosest(fn)
+    local best,bd=nil,math.huge
+    if not Root then return nil end
+    eachTop(function(inst)
+        if fn(inst) then
+            local pp=inst:IsA("Model") and (inst.PrimaryPart or inst:FindFirstChildWhichIsA("BasePart",true)) or inst
+            if pp and pp:IsA("BasePart") then
+                local d=(Root.Position-pp.Position).Magnitude
+                if d<bd then bd=d;best=pp end
+            end
+        end
+    end)
+    return best
+end
 
 -- БОЙ
 section(CombatTab,T[Lang].sec_aim,"sec_aim")
@@ -757,20 +830,24 @@ end,"tp_player")
 section(TPTab,T[Lang].sec_tp_objects,"sec_tp_objects")
 button(TPTab,T[Lang].tp_airdrop,function()
     local t=findClosest(isAirdrop)
-    if t then tpTo(t.Position) end
+    if t then tpTo(t.Position) else warn("[WT] Airdrop not found") end
 end,"tp_airdrop")
 button(TPTab,T[Lang].tp_oil,function()
     local t=findClosest(isOil)
-    if t then tpTo(t.Position) end
+    if t then tpTo(t.Position) else warn("[WT] Oil Rig not found") end
 end,"tp_oil")
 button(TPTab,T[Lang].tp_capture,function()
     local t=findClosest(isCapture)
-    if t then tpTo(t.Position) end
+    if t then tpTo(t.Position) else warn("[WT] Capture not found") end
 end,"tp_capture")
 button(TPTab,T[Lang].tp_veh,function()
     local t=findClosest(isVeh)
-    if t then tpTo(t.Position) end
+    if t then tpTo(t.Position) else warn("[WT] Vehicle not found") end
 end,"tp_veh")
+button(TPTab,T[Lang].tp_barrel,function()
+    local t=findClosest(isBarrel)
+    if t then tpTo(t.Position) else warn("[WT] Barrel not found") end
+end,"tp_barrel")
 
 section(TPTab,T[Lang].sec_tp_marks,"sec_tp_marks")
 local savedPos
@@ -911,27 +988,10 @@ for _,r in ipairs(acc.tabs) do
     end
 end
 
--- БИНД МЕНЮ (J)
+-- БИНД МЕНЮ
 UIS.InputBegan:Connect(function(i,gpe)
     if i.UserInputType~=Enum.UserInputType.Keyboard then return end
     if i.KeyCode==Enum.KeyCode.J then SG.Enabled=not SG.Enabled end
-end)
-
--- CHARACTER
-local Character,Humanoid,Root
-local wasWalkSpeed,wasJumpPower=false,false
-local function updateChar()
-    Character=LP.Character
-    if Character then
-        Humanoid=Character:FindFirstChildOfClass("Humanoid")
-        Root=Character:FindFirstChild("HumanoidRootPart")
-    end
-end
-updateChar()
-LP.CharacterAdded:Connect(function(c)
-    Character=c
-    Humanoid=c:WaitForChild("Humanoid",5)
-    Root=c:WaitForChild("HumanoidRootPart",5)
 end)
 
 -- FOV CIRCLE
@@ -1053,57 +1113,6 @@ local function updateESP()
     end
 end
 
--- ФИЛЬТРЫ
-local function eachTop(fn)
-    for _,a in ipairs(Workspace:GetChildren()) do
-        fn(a)
-        if a:IsA("Model") or a:IsA("Folder") then
-            for _,b in ipairs(a:GetChildren()) do
-                fn(b)
-                if b:IsA("Model") or b:IsA("Folder") then
-                    for _,c in ipairs(b:GetChildren()) do fn(c) end
-                end
-            end
-        end
-    end
-end
-local function getPath(inst)
-    local parts={inst.Name}
-    local p=inst.Parent
-    local depth=0
-    while p and p~=Workspace and depth<5 do
-        table.insert(parts,1,p.Name)
-        p=p.Parent
-        depth=depth+1
-    end
-    return table.concat(parts,"."):lower()
-end
-local function getName(inst)
-    local ok,n=pcall(function() return inst.Name:lower() end)
-    return ok and n or ""
-end
-local function isAirdrop(m)
-    return m.Name=="Airdrop Workspace" and getPath(m):find("game systems")~=nil
-end
-local function isOil(m)
-    local n=getName(m)
-    if n=="oil rig1" or n=="oil rig2" then return getPath(m):find("warehouses")~=nil end
-    return n:find("spawner oil rig")~=nil
-end
-local function isCapture(m)
-    return m.Name=="CapturePoint" and getPath(m):find("game systems")~=nil
-end
-local function isVeh(m)
-    if not m:IsA("Model") then return false end
-    local p=getPath(m)
-    if not p:find("game systems") then return false end
-    local par=m.Parent
-    if not par then return false end
-    local pn=par.Name
-    if pn=="Helicopter Workspace" or pn=="Vehicle Workspace" or pn=="Plane Workspace" or pn=="Tank Workspace" or pn=="Submarine Workspace" then return true end
-    return false
-end
-
 -- WORLD ESP
 local worldObj={}
 local function newWorld(col)
@@ -1176,7 +1185,7 @@ local function updateHitbox()
     end
 end
 
--- PLAYER (Speed/Jump/Noclip)
+-- PLAYER
 local function updatePlayer()
     if Humanoid then
         if Config.WalkSpeed then
@@ -1203,7 +1212,7 @@ local function updatePlayer()
     end
 end
 
--- FLY через CFrame (работает в Delta)
+-- FLY CFrame (Delta)
 local flyCF
 local function updateFly(dt)
     if not Config.Fly then flyCF=nil return end
@@ -1222,7 +1231,7 @@ local function updateFly(dt)
     Root.Velocity=Vector3.zero
 end
 
--- VEHICLE FLY через CFrame
+-- VEHICLE FLY
 local vehCF
 local function updateVehicle(dt)
     local seat=Humanoid and Humanoid.SeatPart
@@ -1242,26 +1251,6 @@ local function updateVehicle(dt)
     else
         vehCF=nil
     end
-end
-
--- TP
-local function tpTo(pos)
-    local r=LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
-    if r and pos then r.CFrame=CFrame.new(pos+Vector3.new(0,3,0)) end
-end
-local function findClosest(fn)
-    local best,bd=nil,math.huge
-    if not Root then return nil end
-    eachTop(function(inst)
-        if fn(inst) then
-            local pp=inst:IsA("Model") and (inst.PrimaryPart or inst:FindFirstChildWhichIsA("BasePart",true)) or inst
-            if pp and pp:IsA("BasePart") then
-                local d=(Root.Position-pp.Position).Magnitude
-                if d<bd then bd=d;best=pp end
-            end
-        end
-    end)
-    return best
 end
 
 -- ЧАТ-КОМАНДЫ
@@ -1305,7 +1294,7 @@ local function chatCmd(msg)
 end
 LP.Chatted:Connect(chatCmd)
 
--- БИНДЫ (ключ + мобильная клава Delta)
+-- БИНДЫ
 UIS.InputBegan:Connect(function(input,gpe)
     if _G.WT_BINDING then return end
     if input.UserInputType~=Enum.UserInputType.Keyboard then return end
@@ -1356,4 +1345,4 @@ RunService.RenderStepped:Connect(function(dt)
     if tHit>=0.3 then tHit=0;updateHitbox() end
 end)
 
-print("[WAR TYCOON HUB v16] Loaded. Bind: J.")
+print("[WAR TYCOON HUB v17] Loaded. Bind: J.")
